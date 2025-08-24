@@ -44,9 +44,7 @@ jobs:
           name: tfplan
           path: tfplan
       - name: Generate Readable Plan
-        run: |
-          alias tf=terraform
-          tf show -no-color tfplan > plan.txt
+        run: terraform show -no-color tfplan > plan.txt
       - name: Comment Plan on PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
