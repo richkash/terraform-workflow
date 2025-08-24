@@ -7,6 +7,7 @@ resource "aws_vpc" "tf_aws_vpc" {
   }
 }
 
+# created a common IGW
 resource "aws_internet_gateway" "tf_igw" {
   vpc_id = aws_vpc.tf_aws_vpc.id
   tags = {
@@ -14,6 +15,7 @@ resource "aws_internet_gateway" "tf_igw" {
   }
 }
 
+# Creating public subnets
 resource "aws_subnet" "tf_public_subnets" {
   for_each          = { for subnet in var.public_subnets : subnet.name => subnet }
   vpc_id            = aws_vpc.tf_aws_vpc.id
@@ -24,6 +26,7 @@ resource "aws_subnet" "tf_public_subnets" {
   }
 }
 
+# Creating private subnets
 resource "aws_subnet" "tf_private_subnets" {
   for_each          = { for subnet in var.private_subnets : subnet.name => subnet }
   vpc_id            = aws_vpc.tf_aws_vpc.id
@@ -34,6 +37,7 @@ resource "aws_subnet" "tf_private_subnets" {
   }
 }
 
+# Creating a public route table
 resource "aws_route_table" "tf_public_rt" {
   vpc_id = aws_vpc.tf_aws_vpc.id
   route {
@@ -45,16 +49,9 @@ resource "aws_route_table" "tf_public_rt" {
   }
 }
 
+# Associating all public subnets with the public route table
 resource "aws_route_table_association" "tf_public_rta" {
   for_each       = aws_subnet.tf_public_subnets
   subnet_id      = each.value.id
   route_table_id = aws_route_table.tf_public_rt.id
-}
-
-resource "aws_nat_gateway" "tf_nat_gw" {
-  allocation_id = aws_eip.tf_nat_eip.id
-  subnet_id     = element(values(aws_subnet.tf_public_subnets)[*].id, 0)
-  tags = {
-    Name = "tf-nat-gw"
-  }
 }
